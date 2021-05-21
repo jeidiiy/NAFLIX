@@ -98,20 +98,20 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 URL url = new URL(mURL);
-                HttpURLConnection kobisConnection = (HttpURLConnection) url.openConnection();
-                kobisConnection.setRequestMethod("GET");
+                HttpURLConnection koficConnection = (HttpURLConnection) url.openConnection();
+                koficConnection.setRequestMethod("GET");
 
                 // Get InputStream
-                StringBuilder sb1 = new StringBuilder(); // kobis API 데이터를 담을 StringBuilder
-                StringBuilder sb2 = new StringBuilder(); // naver API 데이터를 담을 StringBuilder
-                BufferedReader br = new BufferedReader(new InputStreamReader(kobisConnection.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder stringBufferForKofic = new StringBuilder();
+                StringBuilder stringBufferForNaver = new StringBuilder();
+                BufferedReader br = new BufferedReader(new InputStreamReader(koficConnection.getInputStream(), StandardCharsets.UTF_8));
                 String line;
 
                 while ((line = br.readLine()) != null) {
-                    sb1.append(line);
+                    stringBufferForKofic.append(line);
                 }
 
-                String koficResult = sb1.toString();
+                String koficResult = stringBufferForKofic.toString();
 
                 JSONObject jsonObject = new JSONObject(koficResult);
                 JSONObject boxOfficeResult = jsonObject.getJSONObject("boxOfficeResult");
@@ -129,15 +129,14 @@ public class MainActivity extends AppCompatActivity {
                     naverApiConnection.setRequestProperty("X-Naver-Client-Secret", clientSecret);
 
                     BufferedReader br2 = new BufferedReader(new InputStreamReader(naverApiConnection.getInputStream(), StandardCharsets.UTF_8));
-                    String line2;
 
-                    while ((line2 = br2.readLine()) != null) {
-                        sb2.append(line2);
+                    while ((line = br2.readLine()) != null) {
+                        stringBufferForNaver.append(line);
                     }
                 }
 
-                resultArr.add(sb1.toString());
-                resultArr.add(sb2.toString());
+                resultArr.add(stringBufferForKofic.toString());
+                resultArr.add(stringBufferForNaver.toString());
 
                 return resultArr;
             } catch (IOException | JSONException e) {
