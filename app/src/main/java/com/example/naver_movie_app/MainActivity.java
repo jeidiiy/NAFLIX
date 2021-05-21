@@ -1,16 +1,26 @@
 package com.example.naver_movie_app;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottomNavigationView);
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
         // 프래그먼트 생성
         fragmentHome = new Fragment_Home();
@@ -39,20 +49,104 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().replace(R.id.main_layout, fragmentHome).commitAllowingStateLoss();
 
         // bottomNavigation에서 아이콘 클릭 시 열리는 fragment 지정
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull @org.jetbrains.annotations.NotNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.page_home:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.main_layout, fragmentHome).commitAllowingStateLoss();
-                        return true;
-                    case R.id.page_wishList:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.main_layout, fragmentWishlist).commitAllowingStateLoss();
-                        return true;
-                    default:
-                        return false;
-                }
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.page_home:
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_layout, fragmentHome).commitAllowingStateLoss();
+                    return true;
+                case R.id.page_wishList:
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_layout, fragmentWishlist).commitAllowingStateLoss();
+                    return true;
+                default:
+                    return false;
             }
         });
+
+        String key = BuildConfig.Kofic_Api_Key;
+        String weekGb = "0"; // 주간: 0, 주말(금~일): 1, 주중(월~목): 2
+        Calendar cal = Calendar.getInstance();
+
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH + 1);
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+
+        String today = year + String.valueOf(month) + day;
+
+        // 영화진흥위원회에서 주간 박스오피스 순위를 json 타입으로 가져옴
+        String kobisApiURL = "http://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchWeeklyBoxOfficeList.json?key=" + key + "&targetDt=" + today + "&weekGb=" + weekGb;
+        RestAPITask rat = new RestAPITask(kobisApiURL);
+        try {
+            ArrayList<String> result = rat.execute().get();
+            System.out.println("영화 API FETCHING 결과: \n" + "영화진흥원 API 결과: " + result.get(0) + "\n네이버 API 결과: " + result.get(1));
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static class RestAPITask extends AsyncTask<Integer, Void, ArrayList<String>> {
+        protected String mURL;
+
+        public RestAPITask(String url) {
+            mURL = url;
+        }
+
+        @Override
+        protected ArrayList<String> doInBackground(Integer... params) {
+            final String clientId = BuildConfig.X_Naver_Client_Id;
+            final String clientSecret = BuildConfig.X_Naver_Client_Secret;
+            ArrayList<String> resultArr = new ArrayList<>();
+
+            try {
+                URL url = new URL(mURL);
+                HttpURLConnection kobisConnection = (HttpURLConnection) url.openConnection();
+                kobisConnection.setRequestMethod("GET");
+
+                // Get InputStream
+                StringBuilder sb1 = new StringBuilder(); // kobis API 데이터를 담을 StringBuilder
+                StringBuilder sb2 = new StringBuilder(); // naver API 데이터를 담을 StringBuilder
+                BufferedReader br = new BufferedReader(new InputStreamReader(kobisConnection.getInputStream(), StandardCharsets.UTF_8));
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    sb1.append(line);
+                }
+
+                String koficResult = sb1.toString();
+
+                JSONObject jsonObject = new JSONObject(koficResult);
+                JSONObject boxOfficeResult = jsonObject.getJSONObject("boxOfficeResult");
+                JSONArray weeklyBoxOfficeList = boxOfficeResult.getJSONArray("weeklyBoxOfficeList");
+
+                for (int i = 0; i < weeklyBoxOfficeList.length(); i++) {
+                    JSONObject item = weeklyBoxOfficeList.getJSONObject(i);
+                    String title = URLEncoder.encode(item.getString("movieNm"), "UTF-8");
+                    String year = item.getString("openDt").substring(0, 4);
+                    String naverApiUrl = "https://openapi.naver.com/v1/search/movie.json?query=" + title + "&yearfrom=" + year + "&yearto=" + year;
+                    URL naverURL = new URL(naverApiUrl);
+                    HttpURLConnection naverApiConnection = (HttpURLConnection) naverURL.openConnection();
+                    naverApiConnection.setRequestMethod("GET");
+                    naverApiConnection.setRequestProperty("X-Naver-Client-Id", clientId);
+                    naverApiConnection.setRequestProperty("X-Naver-Client-Secret", clientSecret);
+
+                    BufferedReader br2 = new BufferedReader(new InputStreamReader(naverApiConnection.getInputStream(), StandardCharsets.UTF_8));
+                    String line2;
+
+                    while ((line2 = br2.readLine()) != null) {
+                        sb2.append(line2);
+                    }
+                }
+
+                resultArr.add(sb1.toString());
+                resultArr.add(sb2.toString());
+
+                return resultArr;
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+                return resultArr;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> result) {}
     }
 }
