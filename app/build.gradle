@@ -2,6 +2,9 @@ plugins {
     id 'com.android.application'
 }
 
+def Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -14,6 +17,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "Kofic_Api_Key", properties.getProperty("Kofic_Api_Key"))
+        buildConfigField("String", "X_Naver_Client_Id", properties.getProperty("X_Naver_Client_Id"))
+        buildConfigField("String", "X_Naver_Client_Secret", properties.getProperty("X_Naver_Client_Secret"))
     }
 
     buildTypes {
