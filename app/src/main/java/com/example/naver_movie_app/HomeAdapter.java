@@ -7,6 +7,10 @@ import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,7 +22,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-public class HomeAdapter extends RecyclerView.Adapter<MyViewHolder> {
+public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> {
+
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position);
+    }
+
+    private OnItemClickListener mListener = null;
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.mListener = listener;
+    }
+
     private final ArrayList<RecyclerViewItem> dataSet;
 
     public HomeAdapter(ArrayList<RecyclerViewItem> dataSet) {
@@ -52,13 +67,14 @@ public class HomeAdapter extends RecyclerView.Adapter<MyViewHolder> {
         holder.textViewDirector.setText("감독: " + director);
         holder.textViewActors.setText("배우: " + actor);
         holder.textViewRating.setText(String.valueOf(dataSet.get(position).getRating()));
-        holder.ratingBar.setRating((float)dataSet.get(position).getRating() / 2);
+        holder.ratingBar.setRating((float) dataSet.get(position).getRating() / 2);
         AsyncTask<String, Void, Bitmap> bitmap = new DownloadFilesTask().execute(dataSet.get(position).getImageSrc());
         try {
             holder.imageViewPoster.setImageBitmap(bitmap.get());
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 
     @Override
@@ -87,6 +103,35 @@ public class HomeAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
         @Override
         protected void onPostExecute(Bitmap result) {
+        }
+    }
+
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        ImageView imageViewPoster;
+        TextView textViewTitle;
+        TextView textViewDirector;
+        TextView textViewActors;
+        TextView textViewRating;
+        RatingBar ratingBar;
+
+        public MyViewHolder(View itemView) {
+            super(itemView);
+
+            imageViewPoster = itemView.findViewById(R.id.moviePoster);
+            textViewTitle = itemView.findViewById(R.id.movieTitle);
+            textViewDirector = itemView.findViewById(R.id.movieDirector);
+            textViewActors = itemView.findViewById(R.id.movieActors);
+            textViewRating = itemView.findViewById(R.id.movieRatingText);
+            ratingBar = itemView.findViewById(R.id.movieRatingBar);
+
+            itemView.setOnClickListener(v -> {
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    if (mListener != null) {
+                        mListener.onItemClick(v, pos);
+                    }
+                }
+            });
         }
     }
 }
