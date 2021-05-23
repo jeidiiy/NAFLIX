@@ -10,8 +10,8 @@
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_marginEnd="5dp"
-        android:src="@drawable/ic_launcher_background"
-        android:contentDescription="movie Poster" />
+        android:contentDescription="@string/moviePoster"
+        android:src="@drawable/ic_launcher_background" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -23,24 +23,31 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:text="타이틀"
-            android:textSize="20dp" />
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/movieTitle"
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/movieDirector"
-            android:layout_width="wrap_content"
+            android:layout_width="231dp"
             android:layout_height="wrap_content"
             android:layout_below="@id/movieTitle"
             android:layout_alignParentStart="true"
-            android:text="감독" />
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/movieDirector" />
 
         <TextView
             android:id="@+id/movieActors"
-            android:layout_width="wrap_content"
+            android:layout_width="231dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:text="출연" />
+            android:layout_alignParentBottom="true"
+            android:layout_toStartOf="@+id/movieRatingText"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/movieActors" />
 
         <TextView
             android:id="@+id/movieRatingText"
@@ -48,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_toStartOf="@id/movieRatingBar"
-            android:text="평점" />
+            android:text="@string/movieRating" />
 
         <RatingBar
             android:id="@+id/movieRatingBar"
@@ -56,6 +63,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentBottom="true"
+            android:numStars="5"
+            android:max="5"
+            android:stepSize="0.5"
+            android:progressTint="@color/black" />
     </RelativeLayout>
 </LinearLayout>
