@@ -92,8 +92,9 @@ public class MainActivity extends AppCompatActivity {
                 String director = naverApiItem.getString("director");
                 String actors = naverApiItem.getString("actor");
                 int rating = naverApiItem.getInt("userRating");
+                String link = naverApiItem.getString("link");
 
-                homeDataSet.add(new RecyclerViewItem(imageSrc, title, director, actors, rating));
+                homeDataSet.add(new RecyclerViewItem(imageSrc, title, director, actors, rating, link));
             }
 
             Bundle bundle = new Bundle();

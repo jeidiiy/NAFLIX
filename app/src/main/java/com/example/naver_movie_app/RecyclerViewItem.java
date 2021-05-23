@@ -8,13 +8,15 @@ public class RecyclerViewItem implements Serializable {
     private final String director;
     private final String actors;
     private final int rating;
+    private final String link;
 
-    public RecyclerViewItem(String imageSrc, String title, String director, String actors, int rating) {
+    public RecyclerViewItem(String imageSrc, String title, String director, String actors, int rating, String link) {
         this.imageSrc = imageSrc;
         this.title = title;
         this.director = director;
         this.actors = actors;
         this.rating = rating;
+        this.link = link;
     }
 
     public String getTitle() {
@@ -35,5 +37,9 @@ public class RecyclerViewItem implements Serializable {
 
     public int getRating() {
         return this.rating;
+    }
+
+    public String getLink() {
+        return this.link;
     }
 }
