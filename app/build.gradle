@@ -17,7 +17,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "Kofic_Api_Key", properties.getProperty("Kofic_Api_Key"))
+        buildConfigField("String", "Kobis_Api_Key", properties.getProperty("Kobis_Api_Key"))
         buildConfigField("String", "X_Naver_Client_Id", properties.getProperty("X_Naver_Client_Id"))
         buildConfigField("String", "X_Naver_Client_Secret", properties.getProperty("X_Naver_Client_Secret"))
     }

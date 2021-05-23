@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        String key = BuildConfig.Kofic_Api_Key;
+        String key = BuildConfig.Kobis_Api_Key;
         String weekGb = "0"; // 주간: 0, 주말(금~일): 1, 주중(월~목): 2
         Calendar cal = Calendar.getInstance();
 
@@ -120,22 +120,22 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 URL url = new URL(mURL);
-                HttpURLConnection koficConnection = (HttpURLConnection) url.openConnection();
-                koficConnection.setRequestMethod("GET");
+                HttpURLConnection kobisConnection = (HttpURLConnection) url.openConnection();
+                kobisConnection.setRequestMethod("GET");
 
                 // Get InputStream
-                StringBuilder stringBufferForKofic = new StringBuilder();
+                StringBuilder stringBufferForKobis = new StringBuilder();
                 StringBuilder stringBufferForNaver = new StringBuilder();
-                BufferedReader br = new BufferedReader(new InputStreamReader(koficConnection.getInputStream(), StandardCharsets.UTF_8));
+                BufferedReader br = new BufferedReader(new InputStreamReader(kobisConnection.getInputStream(), StandardCharsets.UTF_8));
                 String line;
 
                 while ((line = br.readLine()) != null) {
-                    stringBufferForKofic.append(line);
+                    stringBufferForKobis.append(line);
                 }
 
-                String koficResult = stringBufferForKofic.toString();
+                String kobisResult = stringBufferForKobis.toString();
 
-                JSONObject jsonObject = new JSONObject(koficResult);
+                JSONObject jsonObject = new JSONObject(kobisResult);
                 JSONObject boxOfficeResult = jsonObject.getJSONObject("boxOfficeResult");
                 JSONArray weeklyBoxOfficeList = boxOfficeResult.getJSONArray("weeklyBoxOfficeList");
 
@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 stringBufferForNaver.deleteCharAt(stringBufferForNaver.length() - 1);
                 stringBufferForNaver.append("]");
 
-                resultArr.add(stringBufferForKofic.toString());
+                resultArr.add(stringBufferForKobis.toString());
                 resultArr.add(stringBufferForNaver.toString());
 
                 return resultArr;
