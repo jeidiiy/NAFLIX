@@ -77,13 +77,34 @@ public class MainActivity extends AppCompatActivity {
         RestAPITask rat = new RestAPITask(kobisApiURL);
         try {
             ArrayList<String> result = rat.execute().get();
-            System.out.println("영화 API FETCHING 결과: \n" + "영화진흥원 API 결과: " + result.get(0) + "\n네이버 API 결과: " + result.get(1));
-        } catch (ExecutionException | InterruptedException e) {
+
+            // imageSrc, title, director, actors, rating
+            JSONArray naverApiResult = new JSONArray(result.get(1));
+
+            ArrayList<RecyclerViewItem> homeDataSet = new ArrayList<>();
+
+            // naverAPI에서 imageSrc, title, director, actors, rating 파싱
+            for (int i = 0; i < naverApiResult.length(); i++) {
+                JSONObject naverApiItem = naverApiResult.getJSONObject(i).getJSONArray("items").getJSONObject(0);
+
+                String imageSrc = naverApiItem.getString("image");
+                String title = naverApiItem.getString("title");
+                String director = naverApiItem.getString("director");
+                String actors = naverApiItem.getString("actor");
+                int rating = naverApiItem.getInt("userRating");
+
+                homeDataSet.add(new RecyclerViewItem(imageSrc, title, director, actors, rating));
+            }
+
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("homeDataSet", homeDataSet);
+            fragmentHome.setArguments(bundle);
+        } catch (ExecutionException | InterruptedException | JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public static class RestAPITask extends AsyncTask<Integer, Void, ArrayList<String>> {
+    public static class RestAPITask extends AsyncTask<String, Void, ArrayList<String>> {
         protected String mURL;
 
         public RestAPITask(String url) {
@@ -91,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected ArrayList<String> doInBackground(Integer... params) {
+        protected ArrayList<String> doInBackground(String... params) {
             final String clientId = BuildConfig.X_Naver_Client_Id;
             final String clientSecret = BuildConfig.X_Naver_Client_Secret;
             ArrayList<String> resultArr = new ArrayList<>();
@@ -117,11 +138,12 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject boxOfficeResult = jsonObject.getJSONObject("boxOfficeResult");
                 JSONArray weeklyBoxOfficeList = boxOfficeResult.getJSONArray("weeklyBoxOfficeList");
 
+                stringBufferForNaver.append("[");
+
                 for (int i = 0; i < weeklyBoxOfficeList.length(); i++) {
                     JSONObject item = weeklyBoxOfficeList.getJSONObject(i);
                     String title = URLEncoder.encode(item.getString("movieNm"), "UTF-8");
-                    String year = item.getString("openDt").substring(0, 4);
-                    String naverApiUrl = "https://openapi.naver.com/v1/search/movie.json?query=" + title + "&yearfrom=" + year + "&yearto=" + year;
+                    String naverApiUrl = "https://openapi.naver.com/v1/search/movie.json?query=" + title + "&display=" + 1;
                     URL naverURL = new URL(naverApiUrl);
                     HttpURLConnection naverApiConnection = (HttpURLConnection) naverURL.openConnection();
                     naverApiConnection.setRequestMethod("GET");
@@ -130,10 +152,17 @@ public class MainActivity extends AppCompatActivity {
 
                     BufferedReader br2 = new BufferedReader(new InputStreamReader(naverApiConnection.getInputStream(), StandardCharsets.UTF_8));
 
-                    while ((line = br2.readLine()) != null) {
-                        stringBufferForNaver.append(line);
+                    String line2;
+
+                    while ((line2 = br2.readLine()) != null) {
+                        stringBufferForNaver.append(line2);
                     }
+
+                    stringBufferForNaver.append(",");
+
                 }
+                stringBufferForNaver.deleteCharAt(stringBufferForNaver.length() - 1);
+                stringBufferForNaver.append("]");
 
                 resultArr.add(stringBufferForKofic.toString());
                 resultArr.add(stringBufferForNaver.toString());
@@ -146,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<String> result) {}
+        protected void onPostExecute(ArrayList<String> result) {
+        }
     }
 }
