@@ -49,12 +49,12 @@ public class Fragment_Wishlist extends Fragment {
         int rating;
         String link;
         while (cursor.moveToNext()) {
-            imageSrc = cursor.getString(0);
-            title = cursor.getString(1);
-            director = cursor.getString(2);
-            actors = cursor.getString(3);
-            rating = cursor.getInt(4);
-            link = cursor.getString(5);
+            imageSrc = cursor.getString(1);
+            title = cursor.getString(2);
+            director = cursor.getString(3);
+            actors = cursor.getString(4);
+            rating = cursor.getInt(5);
+            link = cursor.getString(6);
             item = new RecyclerViewItem(imageSrc, title, director, actors, rating, link);
             wishlistDataSet.add(item);
         }
