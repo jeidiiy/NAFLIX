@@ -2,6 +2,7 @@ package com.example.naver_movie_app;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
@@ -52,13 +53,24 @@ public class Fragment_Home extends Fragment {
                 sqlDB = sqlHelper.getWritableDatabase();
 
                 String imageSrc = homeDataSet.get(position).getImageSrc();
+                Cursor cursor = sqlDB.rawQuery("SELECT * FROM movie WHERE imageSrc = '" + imageSrc + "';", null);
+
+                if (cursor.moveToNext()) {
+                    Toast.makeText(view1.getContext(), "이미 찜 목록에 있는 영화입니다.", Toast.LENGTH_SHORT).show();
+                    cursor.close();
+                    sqlDB.close();
+                    return;
+                }
+
+                cursor.close();
+
                 String title = homeDataSet.get(position).getTitle();
                 String director = homeDataSet.get(position).getDirector();
                 String actors = homeDataSet.get(position).getActors();
                 int rating = homeDataSet.get(position).getRating();
                 String link = homeDataSet.get(position).getLink();
 
-                String query = "INSERT INTO movie VALUES ( '"
+                String query = "INSERT INTO movie(imageSrc, title, director, actors, rating, link) VALUES ( '"
                         + imageSrc + "' , '" + title + "' , '" + director + "' , '"
                         + actors + "' , " + rating + " , '" + link + "');";
 
