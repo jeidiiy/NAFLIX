@@ -7,19 +7,19 @@
 
     <ImageView
         android:id="@+id/moviePoster"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:layout_width="110dp"
+        android:layout_height="160dp"
         android:layout_marginEnd="5dp"
         android:contentDescription="@string/moviePoster"
         android:src="@drawable/ic_launcher_background" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp">
+        android:layout_height="160dp">
 
         <TextView
             android:id="@+id/movieTitle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
@@ -40,13 +40,11 @@
 
         <TextView
             android:id="@+id/movieActors"
-            android:layout_width="231dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:layout_toStartOf="@+id/movieRatingText"
+            android:layout_below="@+id/movieDirector"
             android:ellipsize="end"
-            android:singleLine="true"
             android:text="@string/movieActors" />
 
         <TextView
