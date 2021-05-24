@@ -28,10 +28,19 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> 
         void onItemClick(View view, int position);
     }
 
-    private OnItemClickListener mListener = null;
+    public interface OnItemLongClickListener {
+        void onLongClick(View view, int position);
+    }
+
+    private OnItemClickListener myClickListener = null;
+    private OnItemLongClickListener myLongClickListener = null;
 
     public void setOnItemClickListener(OnItemClickListener listener) {
-        this.mListener = listener;
+        this.myClickListener = listener;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.myLongClickListener = listener;
     }
 
     private final ArrayList<RecyclerViewItem> dataSet;
@@ -127,10 +136,20 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> 
             itemView.setOnClickListener(v -> {
                 int pos = getAdapterPosition();
                 if (pos != RecyclerView.NO_POSITION) {
-                    if (mListener != null) {
-                        mListener.onItemClick(v, pos);
+                    if (myClickListener != null) {
+                        myClickListener.onItemClick(v, pos);
                     }
                 }
+            });
+
+            itemView.setOnLongClickListener(v -> {
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    if (myLongClickListener != null) {
+                        myLongClickListener.onLongClick(v, pos);
+                    }
+                }
+                return true;
             });
         }
     }
