@@ -5,7 +5,7 @@
 
 ## Installation
 
-![](Naflix.apk)
+![Naflix.apk](Naflix.apk)
 
 ## 개발기간
 6일
