@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.function.UnaryOperator;
 
 public class Fragment_Home extends Fragment {
 
@@ -136,14 +135,17 @@ public class Fragment_Home extends Fragment {
             int scrollPosition = homeDataSet.size();
             homeAdapter.notifyItemRemoved(scrollPosition);
             ArrayList<RecyclerViewItem> data = new DataFetchAPI().fetchMovieData(lastWeekCount);
-
-            // TODO: 중복 제거 필요
             homeDataSet.addAll(data);
+
+            LinkedHashSet<RecyclerViewItem> listSet = new LinkedHashSet<>(homeDataSet);
+            homeDataSet.clear();
+            Log.d("clearList", homeDataSet.toString());
+            homeDataSet.addAll(listSet);
+            Log.d("fillList", homeDataSet.size() + "");
 
             homeAdapter.notifyDataSetChanged();
             lastWeekCount++;
             isLoading = false;
         });
     }
-
 }

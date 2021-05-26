@@ -19,6 +19,19 @@ public class RecyclerViewItem implements Serializable {
         this.link = link;
     }
 
+    @Override
+    public int hashCode() {
+        return (this.imageSrc.hashCode());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RecyclerViewItem) {
+            return this.imageSrc.equals(((RecyclerViewItem) obj).getImageSrc());
+        }
+        return false;
+    }
+
     public String getTitle() {
         return this.title;
     }
