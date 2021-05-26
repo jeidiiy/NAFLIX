@@ -1,7 +1,5 @@
 package com.example.naver_movie_app;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +31,6 @@ public class DataFetchAPI {
         try {
             ArrayList<String> result = rat.execute().get();
 
-            Log.d("str", result.get(0));
             // imageSrc, title, director, actors, rating
             JSONArray naverApiResult = new JSONArray(result.get(1));
 
