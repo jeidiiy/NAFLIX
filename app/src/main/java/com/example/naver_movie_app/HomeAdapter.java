@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -24,10 +23,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    private final int VIEW_TYPE_ITEM = 0;
-    private final int VIEW_TYPE_LOADING = 1;
-
     private final ArrayList<RecyclerViewItem> dataSet;
 
     private OnItemClickListener myClickListener = null;
@@ -59,13 +54,8 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_ITEM) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_item, parent, false);
-            return new ItemViewHolder(view);
-        } else {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
-            return new LoadingViewHolder(view);
-        }
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_item, parent, false);
+        return new ItemViewHolder(view);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -81,11 +71,6 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemCount() {
         return dataSet == null ? 0 : dataSet.size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return dataSet.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
     }
 
     private static class DownloadFilesTask extends AsyncTask<String, Void, Bitmap> {
@@ -152,11 +137,9 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private static class LoadingViewHolder extends RecyclerView.ViewHolder {
-        ProgressBar progressBar;
 
         public LoadingViewHolder(@NonNull View itemView) {
             super(itemView);
-            progressBar = itemView.findViewById((R.id.progressBar));
         }
     }
 

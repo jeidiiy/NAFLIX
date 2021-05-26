@@ -1,13 +1,13 @@
 package com.example.naver_movie_app;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +31,7 @@ public class Fragment_Home extends Fragment {
     ArrayList<RecyclerViewItem> homeDataSet;
     RecyclerView homeRecyclerView;
     HomeAdapter homeAdapter;
+    ProgressDialog progressDialog;
     private int lastWeekCount = 2;
 
     boolean isLoading = false;
@@ -126,12 +127,13 @@ public class Fragment_Home extends Fragment {
     }
 
     private void loadMore() {
-        homeDataSet.add(null);
-        homeAdapter.notifyItemInserted(homeDataSet.size() - 1);
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("지난 박스오피스 영화 로딩 중...");
+        progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Horizontal);
+        progressDialog.show();
 
         Handler handler = new Handler();
         handler.post(() -> {
-            homeDataSet.remove(homeDataSet.size() - 1);
             int scrollPosition = homeDataSet.size();
             homeAdapter.notifyItemRemoved(scrollPosition);
             ArrayList<RecyclerViewItem> data = new DataFetchAPI().fetchMovieData(lastWeekCount);
@@ -139,11 +141,10 @@ public class Fragment_Home extends Fragment {
 
             LinkedHashSet<RecyclerViewItem> listSet = new LinkedHashSet<>(homeDataSet);
             homeDataSet.clear();
-            Log.d("clearList", homeDataSet.toString());
             homeDataSet.addAll(listSet);
-            Log.d("fillList", homeDataSet.size() + "");
 
             homeAdapter.notifyDataSetChanged();
+            progressDialog.dismiss();
             lastWeekCount++;
             isLoading = false;
         });
