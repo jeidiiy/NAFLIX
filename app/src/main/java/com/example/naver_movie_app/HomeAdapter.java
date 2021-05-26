@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -22,18 +23,26 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> {
+public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private final int VIEW_TYPE_ITEM = 0;
+    private final int VIEW_TYPE_LOADING = 1;
+
+    private final ArrayList<RecyclerViewItem> dataSet;
+
+    private OnItemClickListener myClickListener = null;
+    private OnItemLongClickListener myLongClickListener = null;
+
 
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
+
     }
 
     public interface OnItemLongClickListener {
         void onLongClick(View view, int position);
-    }
 
-    private OnItemClickListener myClickListener = null;
-    private OnItemLongClickListener myLongClickListener = null;
+    }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.myClickListener = listener;
@@ -43,52 +52,40 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> 
         this.myLongClickListener = listener;
     }
 
-    private final ArrayList<RecyclerViewItem> dataSet;
-
     public HomeAdapter(ArrayList<RecyclerViewItem> dataSet) {
         this.dataSet = dataSet;
     }
 
     @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_item, parent, false);
-        return new MyViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_ITEM) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_item, parent, false);
+            return new ItemViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
+            return new LoadingViewHolder(view);
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
-    public void onBindViewHolder(@NonNull @NotNull MyViewHolder holder, int position) {
-        String title = dataSet.get(position).getTitle().replaceAll("</?b>", "");
-        String director = dataSet.get(position).getDirector().replaceAll("\\|", ", ");
-        // 맨 뒤 콤마 삭제
-        if (!director.equals("")) {
-            director = director.substring(0, director.length() - 2);
+    public void onBindViewHolder(@NonNull @NotNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof ItemViewHolder) {
+            populateItemRows((ItemViewHolder) holder, position);
+        } else if (holder instanceof LoadingViewHolder) {
+            showLoadingView((LoadingViewHolder) holder, position);
         }
-
-        String actor = dataSet.get(position).getActors().replaceAll("\\|", ", ");
-        // 맨 뒤 콤마 삭제
-        if (!actor.equals("")) {
-            actor = actor.substring(0, actor.length() - 2);
-        }
-
-        holder.textViewTitle.setText(title);
-        holder.textViewDirector.setText("감독: " + director);
-        holder.textViewActors.setText("배우: " + actor);
-        holder.textViewRating.setText(String.valueOf(dataSet.get(position).getRating()));
-        holder.ratingBar.setRating((float) dataSet.get(position).getRating() / 2);
-        AsyncTask<String, Void, Bitmap> bitmap = new DownloadFilesTask().execute(dataSet.get(position).getImageSrc());
-        try {
-            holder.imageViewPoster.setImageBitmap(bitmap.get());
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
     }
 
     @Override
     public int getItemCount() {
-        return this.dataSet.size();
+        return dataSet == null ? 0 : dataSet.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return dataSet.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
     }
 
     private static class DownloadFilesTask extends AsyncTask<String, Void, Bitmap> {
@@ -115,7 +112,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> 
         }
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    protected class ItemViewHolder extends RecyclerView.ViewHolder {
         ImageView imageViewPoster;
         TextView textViewTitle;
         TextView textViewDirector;
@@ -123,7 +120,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> 
         TextView textViewRating;
         RatingBar ratingBar;
 
-        public MyViewHolder(View itemView) {
+        public ItemViewHolder(View itemView) {
             super(itemView);
 
             imageViewPoster = itemView.findViewById(R.id.moviePoster);
@@ -151,6 +148,46 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder> 
                 }
                 return true;
             });
+        }
+    }
+
+    private static class LoadingViewHolder extends RecyclerView.ViewHolder {
+        ProgressBar progressBar;
+
+        public LoadingViewHolder(@NonNull View itemView) {
+            super(itemView);
+            progressBar = itemView.findViewById((R.id.progressBar));
+        }
+    }
+
+    private void showLoadingView(LoadingViewHolder viewHolder, int position) {
+        // ProgressBar would be displayed
+    }
+
+    private void populateItemRows(ItemViewHolder holder, int position) {
+        String title = dataSet.get(position).getTitle().replaceAll("</?b>", "");
+        String director = dataSet.get(position).getDirector().replaceAll("\\|", ", ");
+        // 맨 뒤 콤마 삭제
+        if (!director.equals("")) {
+            director = director.substring(0, director.length() - 2);
+        }
+
+        String actor = dataSet.get(position).getActors().replaceAll("\\|", ", ");
+        // 맨 뒤 콤마 삭제
+        if (!actor.equals("")) {
+            actor = actor.substring(0, actor.length() - 2);
+        }
+
+        holder.textViewTitle.setText(title);
+        holder.textViewDirector.setText("감독: " + director);
+        holder.textViewActors.setText("배우: " + actor);
+        holder.textViewRating.setText(String.valueOf(dataSet.get(position).getRating()));
+        holder.ratingBar.setRating((float) dataSet.get(position).getRating() / 2);
+        AsyncTask<String, Void, Bitmap> bitmap = new DownloadFilesTask().execute(dataSet.get(position).getImageSrc());
+        try {
+            holder.imageViewPoster.setImageBitmap(bitmap.get());
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

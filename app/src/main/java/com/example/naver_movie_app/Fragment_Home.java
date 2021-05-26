@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,26 +18,43 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.function.UnaryOperator;
 
 public class Fragment_Home extends Fragment {
 
     SQLiteDatabase sqlDB;
     SQLiteOpenHelper sqlHelper;
+    ArrayList<RecyclerViewItem> homeDataSet;
+    RecyclerView homeRecyclerView;
+    HomeAdapter homeAdapter;
+    private int lastWeekCount = 2;
+
+    boolean isLoading = false;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        RecyclerView homeRecyclerView = view.findViewById(R.id.homeRecyclerView);
-        HomeAdapter homeAdapter;
-        RecyclerView.LayoutManager homeRecyclerViewLayoutManager = new LinearLayoutManager(getContext());
+        homeRecyclerView = view.findViewById(R.id.homeRecyclerView);
 
+        RecyclerView.LayoutManager homeRecyclerViewLayoutManager = new LinearLayoutManager(getContext());
         homeRecyclerView.setLayoutManager(homeRecyclerViewLayoutManager);
 
         assert getArguments() != null;
-        ArrayList<RecyclerViewItem> homeDataSet = (ArrayList<RecyclerViewItem>) getArguments().getSerializable("homeDataSet");
+        homeDataSet = (ArrayList<RecyclerViewItem>) getArguments().getSerializable("homeDataSet");
 
+        initAdapter();
+        initScrollListener();
+
+        return view;
+    }
+
+    private void initAdapter() {
         homeAdapter = new HomeAdapter(homeDataSet);
         homeAdapter.setOnItemClickListener((view1, position) -> {
             Intent intent = new Intent(view1.getContext(), MovieWebViewActivity.class);
@@ -83,7 +101,49 @@ public class Fragment_Home extends Fragment {
             builder.show();
         });
         homeRecyclerView.setAdapter(homeAdapter);
-
-        return view;
     }
+
+    private void initScrollListener() {
+        homeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull @NotNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+                if (!isLoading) {
+                    if (linearLayoutManager != null && linearLayoutManager.findLastCompletelyVisibleItemPosition() == homeDataSet.size() - 1) {
+                        loadMore();
+                        isLoading = true;
+                    }
+                }
+            }
+        });
+    }
+
+    private void loadMore() {
+        homeDataSet.add(null);
+        homeAdapter.notifyItemInserted(homeDataSet.size() - 1);
+
+        Handler handler = new Handler();
+        handler.post(() -> {
+            homeDataSet.remove(homeDataSet.size() - 1);
+            int scrollPosition = homeDataSet.size();
+            homeAdapter.notifyItemRemoved(scrollPosition);
+            ArrayList<RecyclerViewItem> data = new DataFetchAPI().fetchMovieData(lastWeekCount);
+
+            // TODO: 중복 제거 필요
+            homeDataSet.addAll(data);
+
+            homeAdapter.notifyDataSetChanged();
+            lastWeekCount++;
+            isLoading = false;
+        });
+    }
+
 }
