@@ -47,12 +47,13 @@ public class NaverAPITask extends AsyncTask<String, Void, ArrayList<String>> {
 
             JSONObject jsonObject = new JSONObject(kobisResult);
             JSONObject boxOfficeResult = jsonObject.getJSONObject("boxOfficeResult");
-            JSONArray weeklyBoxOfficeList = boxOfficeResult.getJSONArray("weeklyBoxOfficeList");
+//            JSONArray weeklyBoxOfficeList = boxOfficeResult.getJSONArray("weeklyBoxOfficeList");
+            JSONArray dailyBoxOfficeList = boxOfficeResult.getJSONArray("dailyBoxOfficeList");
 
             stringBufferForNaver.append("[");
 
-            for (int i = 0; i < weeklyBoxOfficeList.length(); i++) {
-                JSONObject item = weeklyBoxOfficeList.getJSONObject(i);
+            for (int i = 0; i < dailyBoxOfficeList.length(); i++) {
+                JSONObject item = dailyBoxOfficeList.getJSONObject(i);
                 String title = URLEncoder.encode(item.getString("movieNm"), "UTF-8");
                 String naverApiUrl = "https://openapi.naver.com/v1/search/movie.json?query=" + title + "&display=" + 1;
                 URL naverURL = new URL(naverApiUrl);

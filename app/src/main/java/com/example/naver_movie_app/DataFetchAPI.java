@@ -1,5 +1,7 @@
 package com.example.naver_movie_app;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,11 +13,14 @@ import java.util.concurrent.ExecutionException;
 public class DataFetchAPI {
     public ArrayList<RecyclerViewItem> fetchMovieData(int count) {
         String key = BuildConfig.Kobis_Api_Key;
-        String weekGb = "0"; // 주간: 0, 주말(금~일): 1, 주중(월~목): 2
+//        String weekGb = "0"; // 주간: 0, 주말(금~일): 1, 주중(월~목): 2
         ArrayList<RecyclerViewItem> homeDataSet = new ArrayList<>();
 
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, count * 7 * -1);
+//        주간 박스오피스 계산
+//        cal.add(Calendar.DATE, count * 7 * -1);
+//        일별 박스오피스 계산
+        cal.add(Calendar.DATE, count * -1);
         int year = cal.get(Calendar.YEAR);
         int month = cal.get(Calendar.MONTH) + 1;
         int day = cal.get(Calendar.DAY_OF_MONTH);
@@ -25,13 +30,19 @@ public class DataFetchAPI {
 
         String today = year + monthStr + dayStr;
 
-        // 영화진흥위원회에서 주간 박스오피스 순위를 json 타입으로 가져옴
-        String kobisApiURL = "http://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchWeeklyBoxOfficeList.json?key=" + key + "&targetDt=" + today + "&weekGb=" + weekGb;
+//         영화진흥위원회에서 주간 박스오피스 순위를 json 타입으로 가져옴
+//         주간 박스오피스
+//        String kobisApiURL = "http://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchWeeklyBoxOfficeList.json?key=" + key + "&targetDt=" + today + "&weekGb=" + weekGb;
+//         일별 박스오피스
+        String kobisApiURL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=" + key + "&targetDt=" + today;
         NaverAPITask rat = new NaverAPITask(kobisApiURL);
         try {
             ArrayList<String> result = rat.execute().get();
 
             // imageSrc, title, director, actors, rating
+            Log.d("result(0)", result.get(0));
+            Log.d("result(1)", result.get(1));
+
             JSONArray naverApiResult = new JSONArray(result.get(1));
 
             // naverAPI에서 imageSrc, title, director, actors, rating 파싱
